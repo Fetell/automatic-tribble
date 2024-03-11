@@ -23,7 +23,7 @@ def auth_token():
         "username": settings.LOGIN,
         "password": settings.PASSWORD}
     request = requests.post(settings.AUTH_URL, json=payload)
-    yield {"Cookie": f"token={request.json()["token"]}"}
+    yield {"Cookie": f"token={request.json()['token']}"}
 
 
 @pytest.fixture(scope="session")
@@ -93,7 +93,8 @@ def test_update_booking(auth_token, booking_id):
         },
         "additionalneeds": "Lunch"
     }
-    request = requests.post(f'{settings.BOOKING_URL}/{booking_id}', payload, auth_token)
+    request = requests.put(f'{settings.BOOKING_URL}/{booking_id}', json=payload, headers=auth_token)
+    print(request)
     assert request.status_code == 200
     request_2 = requests.get(f'{settings.BOOKING_URL}/{booking_id}')
     print(request_2)
