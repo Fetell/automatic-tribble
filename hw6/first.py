@@ -43,12 +43,11 @@ def booking_id():
     yield request.json()['bookingid']
 
 
-
 @pytest.mark.smoke
-def test_code_ok():
-    request = requests.get(settings.BOOKING_URL)
+def test_healthcheck():
+    request = requests.get(settings.PING_URL)
     print(request)
-    assert request.status_code == 200
+    assert request.status_code == 201
 
 
 @pytest.mark.skip
@@ -96,9 +95,27 @@ def test_update_booking(auth_token, booking_id):
     request = requests.put(f'{settings.BOOKING_URL}/{booking_id}', json=payload, headers=auth_token)
     print(request)
     assert request.status_code == 200
-    request_2 = requests.get(f'{settings.BOOKING_URL}/{booking_id}')
-    print(request_2)
-    assert request_2.json()["additionalneeds"] == "Lunch"
+    request_get = requests.get(f'{settings.BOOKING_URL}/{booking_id}')
+    print(request_get)
+    assert request_get.json()["additionalneeds"] == "Lunch"
+
+
+def test_update_booking_no_auth(booking_id):
+    payload = {
+        "firstname": "James",
+        "lastname": "Brown",
+        "totalprice": 150,
+        "depositpaid": False,
+        "bookingdates": {
+            "checkin": "2024-01-01",
+            "checkout": "2024-02-01"
+        },
+        "additionalneeds": "Birthday cake"
+    }
+    request = requests.put(f'{settings.BOOKING_URL}/{booking_id}', json=payload)
+    assert request.status_code == 403
+    request_get = requests.get(f'{settings.BOOKING_URL}/{booking_id}')
+    assert request_get.json()["additionalneeds"] != "Birthday cake"
 
 
 def test_delete_booking(auth_token, booking_id):
